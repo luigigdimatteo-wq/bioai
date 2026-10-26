@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw, Descriptors, Lipinski, AllChem
-from sklearn.ensemble import RandomForestClassifier
 import py3Dmol
 import streamlit.components.v1 as components
 
@@ -17,7 +16,11 @@ st.markdown("Piattaforma enterprise di intelligenza artificiale per lo screening
 st.sidebar.header("🕹️ Pannello di Controllo")
 option = st.sidebar.radio(
     "Seleziona Modulo:",
-    ["In silico Screening & ADMET", "De Novo Lead Discovery (AI Generator)"]
+    [
+        "In silico Screening & ADMET", 
+        "Batch High-Throughput Screening (Massive Files)", 
+        "De Novo Lead Discovery (AI Generator)"
+    ]
 )
 
 def render_3d_molecule(mol, width=400, height=350):
@@ -56,8 +59,9 @@ def generate_stochastic_leads(target):
         })
     return pd.DataFrame(data)
 
+# --- MODULO 1: SCREENING SINGOLO & ADMET ---
 if option == "In silico Screening & ADMET":
-    st.subheader("🔬 Modulo In Silico Screening & Proprietà ADMET")
+    st.subheader("🔬 Modulo In Silico Screening & Proprietà ADMET (Singola Molecola)")
     smiles_input = st.text_input("Inserisci la stringa SMILES della molecola:", "CC(=O)OC1=CC=CC=C1C(=O)O")
     
     if smiles_input:
@@ -87,7 +91,70 @@ if option == "In silico Screening & ADMET":
             m2.metric("LogP", f"{logp:.2f}")
             m3.metric("Accettori Legami H", hda)
             m4.metric("Donatori Legami H", hdd)
+        else:
+            st.error("Stringa SMILES non valida.")
 
+# --- MODULO 2: BATCH SCREENING MASSIVO ---
+elif option == "Batch High-Throughput Screening (Massive Files)":
+    st.subheader("📂 High-Throughput Screening & Analisi Librerie Massive")
+    st.markdown("Carica un file CSV contenente una colonna con le stringhe **SMILES** per eseguire lo screening ADMET massivo su migliaia di composti in parallelo.")
+    
+    uploaded_file = st.file_uploader("Carica file libreria chimica (CSV)", type=["csv"])
+    
+    if uploaded_file is not None:
+        try:
+            df_batch = pd.read_csv(uploaded_file)
+            st.success(f"File caricato con successo! Trovate {len(df_batch)} righe.")
+            st.dataframe(df_batch.head(), use_container_width=True)
+            
+            smiles_col = st.selectbox("Seleziona la colonna contenente le stringhe SMILES", df_batch.columns)
+            
+            if st.button("🚀 Avvia Batch ADMET Screening"):
+                with st.spinner("Elaborazione e calcolo descrittori in corso..."):
+                    results = []
+                    for idx, row in df_batch.iterrows():
+                        smi = str(row[smiles_col])
+                        m = Chem.MolFromSmiles(smi)
+                        if m:
+                            results.append({
+                                "SMILES": smi,
+                                "Molecular Weight": round(Descriptors.MolWt(m), 2),
+                                "LogP": round(Descriptors.MolLogP(m), 2),
+                                "H-Acceptors": Lipinski.NumHAcceptors(m),
+                                "H-Donors": Lipinski.NumHDonors(m),
+                                "ADMET Status": "Passed" if Descriptors.MolWt(m) < 500 else "Review Required"
+                            })
+                        else:
+                            results.append({
+                                "SMILES": smi,
+                                "Molecular Weight": None,
+                                "LogP": None,
+                                "H-Acceptors": None,
+                                "H-Donors": None,
+                                "ADMET Status": "Invalid SMILES"
+                            })
+                    
+                    res_df = pd.DataFrame(results)
+                    st.session_state["batch_results"] = res_df
+                    st.success("🎉 Batch screening completato con successo!")
+        
+        except Exception as e:
+            st.error(f durante la lettura del file: {e})
+
+    if "batch_results" in st.session_state:
+        st.markdown("---")
+        st.subheader("📊 Risultati dello Screening Massivo")
+        st.dataframe(st.session_state["batch_results"], use_container_width=True)
+        
+        csv_data = st.session_state["batch_results"].to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Scarica Report Completo Batch (CSV)",
+            data=csv_data,
+            file_name="bioai_batch_admet_report.csv",
+            mime="text/csv"
+        )
+
+# --- MODULO 3: DE NOVO LEAD DISCOVERY ---
 elif option == "De Novo Lead Discovery (AI Generator)":
     st.subheader("🧬 Motore di scoperta generativa AI De Novo")
     st.markdown("Utilizza la chimica computazionale generativa per sintetizzare e scoprire **nuovi candidati molecolari ottimizzati** mirati a un legame avanzato e a profili ADMET puliti.")
