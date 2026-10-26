@@ -139,7 +139,7 @@ elif option == "Batch High-Throughput Screening (Massive Files)":
                     st.success("🎉 Batch screening completato con successo!")
         
         except Exception as e:
-            st.error(f durante la lettura del file: {e})
+            st.error(f"Errore durante la lettura del file: {e}")
 
     if "batch_results" in st.session_state:
         st.markdown("---")
