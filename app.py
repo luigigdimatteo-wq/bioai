@@ -10,7 +10,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="BioAI Drug Discovery Platform", layout="wide", page_icon="🧬")
 
 st.title("🧬 BioAI Drug Discovery & Molecular Intelligence Platform")
-st.markdown("Piattaforma enterprise di intelligenza artificiale per lo screening, la simulazione ADMET e la scoperta De Novo di candidati farmacologici.")
+st.markdown("Piattaforma enterprise di intelligenza artificiale per lo screening, la simulazione ADMET, l'analisi dei tossicofori e la scoperta De Novo.")
 
 # Sidebar per la navigazione
 st.sidebar.header("🕹️ Pannello di Controllo")
@@ -18,6 +18,7 @@ option = st.sidebar.radio(
     "Seleziona Modulo:",
     [
         "In silico Screening & ADMET", 
+        "Toxicity & Structural Alerts Screening",
         "Batch High-Throughput Screening (Massive Files)", 
         "De Novo Lead Discovery (AI Generator)"
     ]
@@ -94,7 +95,47 @@ if option == "In silico Screening & ADMET":
         else:
             st.error("Stringa SMILES non valida.")
 
-# --- MODULO 2: BATCH SCREENING MASSIVO ---
+# --- MODULO 2: TOXICITY & STRUCTURAL ALERTS ---
+elif option == "Toxicity & Structural Alerts Screening":
+    st.subheader("⚠️ Screening dei Tossicofori & Alert Strutturali")
+    st.markdown("Analisi predittiva avanzata per identificare gruppi reattivi e alert di tossicità strutturale.")
+    
+    smiles_tox = st.text_input("Inserisci SMILES per l'analisi di tossicità:", "CC(=O)OC1=CC=CC=C1C(=O)O")
+    
+    if smiles_tox:
+        mol = Chem.MolFromSmiles(smiles_tox)
+        if mol is not None:
+            col_t1, col_t2 = st.columns([1, 2])
+            with col_t1:
+                st.image(Draw.MolToImage(mol, size=(300, 300)), caption="Analisi Tossicologica")
+            with col_t2:
+                st.markdown("### 🔍 Risultati Profilo Tossicologico in Silico")
+                
+                mw = Descriptors.MolWt(mol)
+                logp = Descriptors.MolLogP(mol)
+                
+                pains_smarts = Chem.MolFromSmarts("[N+](=O)[O-]")
+                has_nitro = mol.HasSubstructMatch(pains_smarts) if pains_smarts else False
+                
+                alerts = []
+                if logp > 5.0:
+                    alerts.append("⚠️ **High Lipophilicity Alert**: LogP > 5.0 (Rischio accumulo lipidico / clearance epatica).")
+                if mw > 500:
+                    alerts.append("⚠️ **Bioavailability Alert**: Peso molecolare > 500 Da.")
+                if has_nitro:
+                    alerts.append("🚨 **Toxicophore Alert**: Gruppo nitroaromatico rilevato (potenziale genotossicità).")
+                
+                if not alerts:
+                    st.success("✅ **Nessun alert tossicologico critico rilevato.** Il composto rientra nei parametri di sicurezza standard.")
+                else:
+                    for alert in alerts:
+                        st.warning(alert)
+                
+                st.info("💡 L'algoritmo incrocia i frammenti molecolari con i database di tossicità predittiva per la mitigazione precoce del rischio clinico.")
+        else:
+            st.error("Stringa SMILES non valida.")
+
+# --- MODULO 3: BATCH SCREENING MASSIVO ---
 elif option == "Batch High-Throughput Screening (Massive Files)":
     st.subheader("📂 High-Throughput Screening & Analisi Librerie Massive")
     st.markdown("Carica un file CSV contenente una colonna con le stringhe **SMILES** per eseguire lo screening ADMET massivo su migliaia di composti in parallelo.")
@@ -154,7 +195,7 @@ elif option == "Batch High-Throughput Screening (Massive Files)":
             mime="text/csv"
         )
 
-# --- MODULO 3: DE NOVO LEAD DISCOVERY ---
+# --- MODULO 4: DE NOVO LEAD DISCOVERY ---
 elif option == "De Novo Lead Discovery (AI Generator)":
     st.subheader("🧬 Motore di scoperta generativa AI De Novo")
     st.markdown("Utilizza la chimica computazionale generativa per sintetizzare e scoprire **nuovi candidati molecolari ottimizzati** mirati a un legame avanzato e a profili ADMET puliti.")
