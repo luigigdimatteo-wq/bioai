@@ -350,7 +350,7 @@ elif option == "📊 Investor Relations & Tech Whitepaper":
     with tab_contact:
         st.markdown("### 💼 Investor Contact & Data Room Access")
         st.info("To request access to the full Data Room, 5-year Financial Model, or schedule a private demo for Venture Capital funds, please reach out directly to the Founder.")
-        st.markdown("**Founder & CEO Email**: `investors@bioai-therapeutics.com` / `luigi@bioai.io`")
+        st.markdown("**Founder & CEO Email**: `LUIGI.GDIMATTEO@GMAIL.COM` / `LUIGI.GDIMATTEO@GMAIL.COM`")
         
         deck_text = """==================================================
 BIOAI THERAPEUTICS - EXECUTIVE INVESTOR MEMORANDUM
@@ -361,7 +361,7 @@ Validation       : Calibrated on ChEMBL/PubChem datasets
 Business Model   : Enterprise SaaS + Co-Discovery Royalties
 Round Request    : Pre-Seed / Seed ($1.5M for Lab Validation & Scale)
 
-Contact: luigi@bioai.io
+Contact: LUIGI.GDIMATTEO@GMAIL.COM
 =================================================="""
         st.download_button(
             label="📥 Download Executive Investor Memorandum (TXT)",

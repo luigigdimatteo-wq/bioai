@@ -37,4 +37,4 @@ Luigi Di Matteo is a visionary founder bridging computational chemistry, machine
 ---
 
 **Submitted by**: BioAI Therapeutics Corporate Communications  
-**Contact**: `nomination@bioai-therapeutics.com` | `luigi@bioai.io`
+**Contact**: `LUIGI.GDIMATTEO@GMAIL.COM` | `LUIGI.GDIMATTEO@GMAIL.COM`

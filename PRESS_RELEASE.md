@@ -30,5 +30,5 @@ BioAI Therapeutics is an enterprise Bio-AI SaaS company building artificial inte
 **Media Contact**:  
 Press & Communications Team  
 BioAI Therapeutics  
-`press@bioai-therapeutics.com` | `luigi@bioai.io`  
+`LUIGI.GDIMATTEO@GMAIL.COM` | `LUIGI.GDIMATTEO@GMAIL.COM`  
 [https://4qtxkmdbe6gsrummvbsssl.streamlit.app/](https://4qtxkmdbe6gsrummvbsssl.streamlit.app/)

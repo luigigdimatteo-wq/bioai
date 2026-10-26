@@ -18,4 +18,4 @@ This document serves as an institutional guarantee during Venture Capital techni
 
 ---
 **BioAI Therapeutics Legal & IP Team**  
-`ip@bioai-therapeutics.com` | `luigi@bioai.io`
+`LUIGI.GDIMATTEO@GMAIL.COM` | `LUIGI.GDIMATTEO@GMAIL.COM`
