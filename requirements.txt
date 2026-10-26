@@ -3,3 +3,4 @@ rdkit>=2023.09.1
 scikit-learn
 pandas
 requests
+py3Dmol
