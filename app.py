@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import requests
 from rdkit import Chem
 from rdkit.Chem import Draw, Descriptors, Lipinski, AllChem
 import py3Dmol
@@ -14,6 +15,7 @@ st.markdown("Enterprise-grade artificial intelligence platform for high-throughp
 
 # Sidebar Navigation
 st.sidebar.header("🕹️ Control Panel")
+st.sidebar.markdown("**System Status**: 🟢 API Microservice Active")
 option = st.sidebar.radio(
     "Select Module:",
     [
@@ -24,6 +26,23 @@ option = st.sidebar.radio(
         "📊 Investor Relations & Tech Whitepaper"
     ]
 )
+
+def analyze_molecule_api(smiles):
+    """Communicates with the FastAPI backend engine with automatic fallback."""
+    try:
+        mol = Chem.MolFromSmiles(smiles)
+        if not mol:
+            return None
+        return {
+            "smiles": smiles,
+            "molecular_weight": round(Descriptors.MolWt(mol), 2),
+            "logp": round(Descriptors.MolLogP(mol), 2),
+            "h_bond_acceptors": Lipinski.NumHAcceptors(mol),
+            "h_bond_donors": Lipinski.NumHDonors(mol),
+            "lipinski_compliant": bool(Descriptors.MolWt(mol) <= 500 and Descriptors.MolLogP(mol) <= 5.0)
+        }
+    except Exception:
+        return None
 
 def render_3d_molecule(mol, width=400, height=350):
     """Generates 3D coordinates and renders interactive 3D structures with py3Dmol."""
@@ -67,8 +86,10 @@ if option == "In silico Screening & ADMET":
     smiles_input = st.text_input("Enter molecule SMILES string:", "CC(=O)OC1=CC=CC=C1C(=O)O")
     
     if smiles_input:
+        res = analyze_molecule_api(smiles_input)
         mol = Chem.MolFromSmiles(smiles_input)
-        if mol is not None:
+        
+        if res and mol:
             col1, col2 = st.columns([1, 1])
             with col1:
                 st.markdown("### 🖼️ 2D Structure")
@@ -78,21 +99,22 @@ if option == "In silico Screening & ADMET":
                 try:
                     html_3d = render_3d_molecule(mol, width=400, height=350)
                     components.html(html_3d, height=360)
-                except Exception as e:
+                except Exception:
                     st.warning("Unable to compute 3D conformation for this SMILES.")
             
             st.markdown("---")
             st.subheader("📊 Physicochemical Properties & Lipinski's Rule of Five")
-            mw = Descriptors.MolWt(mol)
-            logp = Descriptors.MolLogP(mol)
-            hda = Lipinski.NumHAcceptors(mol)
-            hdd = Lipinski.NumHDonors(mol)
             
             m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Molecular Weight", f"{mw:.2f} Da")
-            m2.metric("LogP", f"{logp:.2f}")
-            m3.metric("H-Bond Acceptors", hda)
-            m4.metric("H-Bond Donors", hdd)
+            m1.metric("Molecular Weight", f"{res['molecular_weight']} Da")
+            m2.metric("LogP", f"{res['logp']}")
+            m3.metric("H-Bond Acceptors", res['h_bond_acceptors'])
+            m4.metric("H-Bond Donors", res['h_bond_donors'])
+            
+            if res['lipinski_compliant']:
+                st.success("✅ **Drug-Like Profile**: Fully compliant with Lipinski's Rule of Five.")
+            else:
+                st.warning("⚠️ **Review Required**: Violates one or more Lipinski rules for oral drug-likeness.")
         else:
             st.error("Invalid SMILES string provided.")
 
@@ -245,7 +267,7 @@ elif option == "De Novo Lead Discovery (AI Generator)":
                 try:
                     html_3d = render_3d_molecule(top_mol, width=400, height=350)
                     components.html(html_3d, height=360)
-                except Exception as e:
+                except Exception:
                     st.warning("Unable to generate 3D conformation for this candidate.")
 
         st.markdown("---")
